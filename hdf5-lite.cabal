@@ -22,8 +22,8 @@ library
   build-depends:       base >= 4.7 && < 5
                      , inline-c
                      , text
+                     , vector
                      -- , bytestring
-                     -- , vector
 
 -- executable hdf5-lite
 --   default-language:    Haskell2010
