@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/ocramz/hdf5-lite.png)](https://travis-ci.org/ocramz/hdf5-lite)
 
-Bindings to the HDF5 "lite" interface
+Bindings to the HDF5 "lite" interface: https://support.hdfgroup.org/HDF5/doc/HL/RM_H5LT.html
 
 ## Installation
 
