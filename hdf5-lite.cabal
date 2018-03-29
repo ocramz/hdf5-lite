@@ -24,6 +24,7 @@ library
                        Data.HDF5.Lite.Internal
                        Data.HDF5.Internal.Exceptions
                        Data.HDF5.Internal.Types
+  other-modules:       Data.HDF5.Store
   -- c-sources:           src/Data/HDF5/Lite/Internal/Types.c
   build-depends:       base >= 4.7 && < 5
                      , containers

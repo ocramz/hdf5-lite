@@ -8,7 +8,7 @@ import Control.Monad.Catch (throwM, MonadThrow(..))
 import Control.Exception (Exception(..), bracket)
 
 import Foreign.C.String (CString, peekCString, withCString)
-import Foreign.C.Types (CInt, CChar, CDouble, CFloat)
+import Foreign.C.Types (CInt, CChar, CDouble, CFloat, CSize)
 -- import Foreign.Marshal.Alloc (alloca)
 import Foreign.Marshal.Array (withArray)
 import Foreign.Ptr (Ptr)
@@ -21,7 +21,7 @@ import qualified Data.Vector.Unboxed as VU
 import qualified Data.Vector.Storable as VS
 import qualified Data.Vector.Storable.Mutable as VM
 
-import           Data.HDF5.Internal.Types (Herr, Hid, Hsize)
+import           Data.HDF5.Internal.Types (Herr, Hid, Hsize, H5T_class_t)
 import qualified Data.HDF5.Lite.Internal as H
 import qualified Language.C.Inline as C
 
@@ -225,14 +225,16 @@ dclose did = [C.exp| herr_t{ H5Dclose( $(hid_t did)) } |]
 -- H5T_class_t * class_id
 --     OUT: The class identifier. To a list of the HDF5 class types please refer to the Datatype Interface API help.
 -- size_t * type_size
---     OUT: The size of the datatype in bytes. 
+--     OUT: The size of the datatype in bytes.
+getDatasetInfo
+  :: Hid -> String -> IO (Hsize, H5T_class_t, CSize)
 getDatasetInfo loc name = withCString name $ \name_ ->
-  C.withPtr $ \dims ->
-  C.withPtr $ \clid ->
-  C.withPtr $ \szt ->
+  withPtr3 $ \dims clid szt ->
     [C.exp| herr_t{
         H5LTget_dataset_info ( $(hid_t loc), $(const char *name_), $(hsize_t *dims), $(H5T_class_t *clid), $(size_t *szt) )
                   }|]
+
+    
 
 
 
@@ -260,6 +262,9 @@ getDatasetInfo loc name = withCString name $ \name_ ->
 
 -- | Helpers
 
+
+
+
 class Sized v where
   type SizedData v :: * 
   dat :: v -> SizedData v
@@ -267,3 +272,19 @@ class Sized v where
   rank :: v -> CInt
 
 -- data Sized v = Sized { szDat :: v, szDims :: [Hsize] } deriving (Eq, Show)
+
+
+
+withPtr2
+  :: (Storable a, Storable b) =>
+     (Ptr a -> Ptr b -> IO Herr) -> IO (a, b)
+withPtr2 io = do
+  (a, (b, _)) <- C.withPtr $ \a -> C.withPtr $ \b -> throwH (io a b)
+  return (a, b)
+
+withPtr3
+  :: (Storable a, Storable b, Storable c) =>
+     (Ptr a -> Ptr b -> Ptr c -> IO Herr) -> IO (a, b, c)
+withPtr3 io = do
+  (a, (b, (c, _))) <- C.withPtr $ \a -> C.withPtr $ \b -> C.withPtr $ \c -> throwH (io a b c)
+  return (a, b, c)
