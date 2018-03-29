@@ -34,29 +34,3 @@ hdf5TypesTable = M.fromList [
   , (C.TypeName "hsize_t", [t| Hsize |])
                             ]
 
-
-
-{-
--- * Enums
-
-type Nag_Boolean = CInt
-type Nag_ErrorControl = CInt
-
--- * Utils
-
-type Nag_Integer = CLong
-
--- * Context
-
-nagCtx :: Context
-nagCtx = baseCtx <> funCtx <> vecCtx <> ctx
-  where
-    ctx = mempty
-      { ctxTypesTable = nagTypesTable
-      }
-
-nagTypesTable :: Map.Map C.TypeSpecifier TH.TypeQ
-nagTypesTable = Map.fromList
-  [ -- TODO this might not be a long, see nag_types.h
-    (C.TypeName "Integer", [t| Nag_Integer |])
--}  
