@@ -22,6 +22,7 @@ library
   exposed-modules:     Data.HDF5
                        Data.HDF5.Lite
                        Data.HDF5.Lite.Internal
+  -- c-sources:           src/Data/HDF5/Lite/Internal/Types.c
   build-depends:       base >= 4.7 && < 5
                      , inline-c
                      , text
