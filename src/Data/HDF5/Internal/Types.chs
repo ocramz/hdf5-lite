@@ -21,3 +21,7 @@ type Htri = {#type htri_t #}
 -- | HDF5 native datatypes : https://support.hdfgroup.org/HDF5/doc/RM/PredefDTypes.html
   
 -- type HNativeDouble = {#type H5T_NATIVE_DOUBLE #}
+
+
+-- | flags
+
