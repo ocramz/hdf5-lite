@@ -26,7 +26,9 @@ library
   -- c-sources:           src/Data/HDF5/Lite/Internal/Types.c
   build-depends:       base >= 4.7 && < 5
                      , containers
+                     , ghc-prim
                      , inline-c
+                     , primitive
                      , text
                      , template-haskell
                      , vector
