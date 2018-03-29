@@ -5,6 +5,7 @@ import           Data.Functor ((<$>))
 import           Foreign.C.String (peekCString, withCString)
 import           Foreign.C.Types
 import           Foreign.Marshal.Alloc (alloca)
+import Foreign.Marshal.Array (withArray)
 import           Foreign.Ptr (Ptr)
 import Foreign.Storable
 
@@ -33,10 +34,12 @@ C.include "<hdf5_hl.h>"
 -- Returns:
 --     Returns a non-negative value if successful; otherwise returns a negative value. 
 makeDataset
-  :: Hid -> String -> CInt -> Ptr Hsize -> Hid -> Ptr () -> IO Herr
-makeDataset loc dsname rank dims tyid buffer = withCString dsname $ \dsname_ -> 
+  :: Hid -> String -> CInt -> [Hsize] -> Hid -> Ptr () -> IO Herr
+makeDataset loc dsname rank dims tyid buffer =
+  withCString dsname $ \dsname_ ->
+  withArray dims $ \dims_ -> 
   [C.exp| herr_t{
-      H5LTmake_dataset( $(hid_t loc), $(const char* dsname_), $(int rank), $(const hsize_t* dims), $(hid_t tyid), $(const void* buffer) )
+      H5LTmake_dataset( $(hid_t loc), $(const char* dsname_), $(int rank), $(const hsize_t* dims_), $(hid_t tyid), $(const void* buffer) )
       } |]
 
 
