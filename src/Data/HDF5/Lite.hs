@@ -5,14 +5,14 @@ module Data.HDF5.Lite where
 import           Data.Functor ((<$>))
 
 import Control.Monad.Catch (throwM, MonadThrow(..))
-import Control.Exception (bracket)
+import Control.Exception (Exception(..), bracket)
 
-import Foreign.C.String (peekCString, withCString)
-import Foreign.C.Types (CInt)
+import Foreign.C.String (CString, peekCString, withCString)
+import Foreign.C.Types (CInt, CChar, CDouble, CFloat)
 -- import Foreign.Marshal.Alloc (alloca)
 import Foreign.Marshal.Array (withArray)
--- import Foreign.Ptr (Ptr)
--- import Foreign.Storable
+import Foreign.Ptr (Ptr)
+import Foreign.Storable
 
 import GHC.Prim
 
@@ -136,18 +136,62 @@ withFile name mode = bracket (fopen name mode) fclose
 --     IN: Buffer with data to be written to the dataset.
 -- Returns:
 --     Returns a non-negative value if successful; otherwise returns a negative value.
-makeDatasetDouble :: Hid -> String -> [Hsize] -> VS.Vector C.CDouble -> IO Herr
-makeDatasetDouble loc dsname dims buffer =
-  let
+makeDatasetDouble' :: Hid -> Ptr CChar -> CInt -> Ptr Hsize -> Ptr C.CDouble -> IO Herr
+makeDatasetDouble' loc name rank dims bp =
+  [C.exp| herr_t{
+        H5LTmake_dataset_double( $(hid_t loc), $(const char* name), $(int rank), $(const hsize_t* dims), $(double* bp) ) } |]  
+
+
+makeDatasetDouble
+  :: Hid -> String -> [Hsize] -> VS.Vector C.CDouble -> IO ()
+makeDatasetDouble loc name dims buffer =
+  withMakeDataset loc name dims buffer makeDatasetDouble'
+
+
+-- float
+
+makeDatasetFloat' :: Hid -> Ptr CChar -> CInt -> Ptr Hsize -> Ptr CFloat -> IO Herr
+makeDatasetFloat' loc name rank dims bp =
+  [C.exp| herr_t{
+        H5LTmake_dataset_float( $(hid_t loc), $(const char* name), $(int rank), $(const hsize_t* dims), $(float* bp) ) } |]
+
+makeDatasetFloat
+  :: Hid -> String -> p -> [Hsize] -> VS.Vector CFloat -> IO ()
+makeDatasetFloat loc name rank dims buffer =
+  withMakeDataset loc name dims buffer makeDatasetFloat'
+
+-- int
+
+makeDatasetInt'
+  :: Hid -> Ptr CChar -> CInt -> Ptr Hsize -> Ptr CInt -> IO Herr
+makeDatasetInt' loc name rank dims bp =
+  [C.exp| herr_t{
+        H5LTmake_dataset_int( $(hid_t loc), $(const char* name), $(int rank), $(const hsize_t* dims), $(int* bp) ) } |]
+
+makeDatasetInt
+  :: Hid -> String -> p -> [Hsize] -> VS.Vector CInt -> IO ()
+makeDatasetInt loc name rank dims bp =
+  withMakeDataset loc name dims bp makeDatasetInt'
+  
+
+-- | Helper function for dataset creation
+withMakeDataset :: (Num t1, Storable a1, Storable a2) =>
+     t2
+     -> String
+     -> [a1]
+     -> VS.Vector a2
+     -> (t2 -> CString -> t1 -> Ptr a1 -> Ptr a2 -> IO Herr)
+     -> IO ()
+withMakeDataset loc name dims buffer io =
+    let
     rank = fromIntegral $ length dims
   in 
-    withCString dsname $ \dsname_ ->
+    withCString name $ \name_ ->
     withArray dims $ \dims_ -> 
-    VS.unsafeWith buffer $ \ bp ->
-        [C.exp| herr_t{
-        H5LTmake_dataset_double( $(hid_t loc), $(const char* dsname_), $(int rank), $(const hsize_t* dims_), $(double* bp) )
-        } |]  
+    VS.unsafeWith buffer $ \ bp_ -> throwH (io loc name_ rank dims_ bp_)
 
+
+-- herr_t H5LTmake_dataset_char ( hid_t loc_id, const char *dset_name, int rank, const hsize_t *dims, const char *buffer ) 
 
 
 
