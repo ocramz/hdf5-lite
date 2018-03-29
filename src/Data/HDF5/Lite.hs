@@ -10,7 +10,7 @@ import Control.Exception (Exception(..), bracket)
 import Foreign.C.String (CString, peekCString, withCString)
 import Foreign.C.Types (CInt, CChar, CDouble, CFloat, CSize)
 -- import Foreign.Marshal.Alloc (alloca)
-import Foreign.Marshal.Array (withArray)
+import Foreign.Marshal.Array (withArray, peekArray, lengthArray0)
 import Foreign.Ptr (Ptr)
 import Foreign.Storable
 
@@ -121,6 +121,39 @@ withFileCreate name = bracket (fcreate name) fclose
 
 
 
+-- hid_t H5Screate_simple( int rank, const hsize_t * current_dims, const hsize_t * maximum_dims )
+-- Purpose:
+--     Creates a new simple dataspace and opens it for access.
+-- Description:
+--     H5Screate_simple creates a new simple dataspace and opens it for access, returning a dataspace identifier.
+--     rank is the number of dimensions used in the dataspace.
+--     current_dims is a one-dimensional array of size rank specifying the size of each dimension of the dataset. maximum_dims is an array of the same size specifying the upper limit on the size of each dimension.
+--     Any element of current_dims can be 0 (zero). Note that no data can be written to a dataset if the size of any dimension of its current dataspace is 0. This is sometimes a useful initial state for a dataset.
+--     maximum_dims may be the null pointer, in which case the upper limit is the same as current_dims. Otherwise, no element of maximum_dims should be smaller than the corresponding element of current_dims.
+--     If an element of maximum_dims is H5S_UNLIMITED, the maximum size of the corresponding dimension is unlimited.
+--     Any dataset with an unlimited dimension must also be chunked; see H5Pset_chunk. Similarly, a dataset must be chunked if current_dims does not equal maximum_dims.
+--     The dataspace identifier returned from this function must be released with H5Sclose or resource leaks will occur.
+-- Parameters:
+--     int rank 	IN: Number of dimensions of dataspace.
+--     const hsize_t * current_dims 	IN: Array specifying the size of each dimension.
+--     const hsize_t * maximum_dims     	IN: Array specifying the maximum size of each dimension.
+screateSimple :: CInt -> [Hsize] -> IO Hid
+screateSimple rank dims =
+  withArray dims $ \dims_ -> 
+  [C.exp| hid_t{
+      H5Screate_simple( $(int rank), $(hsize_t* dims_), NULL)
+               }|]
+
+sclose :: Hid -> IO Herr
+sclose hid = [C.exp| herr_t{ H5Sclose( $(hid_t hid)) }|]
+
+-- | Memory bracket for dataspaces
+withDataspace :: CInt -> [Hsize] -> (Hid -> IO c) -> IO c
+withDataspace rank dims = bracket (screateSimple rank dims) sclose
+
+
+
+
 -- * Dataset (H5D)
 
 -- herr_t H5LTmake_dataset_double ( hid_t loc_id, const char *dset_name, int rank, const hsize_t *dims, const double *buffer )
@@ -226,13 +259,15 @@ dclose did = [C.exp| herr_t{ H5Dclose( $(hid_t did)) } |]
 --     OUT: The class identifier. To a list of the HDF5 class types please refer to the Datatype Interface API help.
 -- size_t * type_size
 --     OUT: The size of the datatype in bytes.
-getDatasetInfo
-  :: Hid -> String -> IO (Hsize, H5T_class_t, CSize)
-getDatasetInfo loc name = withCString name $ \name_ ->
-  withPtr3 $ \dims clid szt ->
-    [C.exp| herr_t{
+getDatasetInfo :: Hid -> String -> IO ([Hsize], H5T_class_t, CSize)
+getDatasetInfo loc name = do 
+  (sizes, (clid, szt)) <- peekArrayPtr (undefined :: Hsize) $ \dims -> 
+      withPtr2 $ \ clid szt ->
+        withCString name $ \name_ ->                    
+        [C.exp| herr_t{
         H5LTget_dataset_info ( $(hid_t loc), $(const char *name_), $(hsize_t *dims), $(H5T_class_t *clid), $(size_t *szt) )
                   }|]
+  return (sizes, clid, szt)        
 
     
 
@@ -288,3 +323,14 @@ withPtr3
 withPtr3 io = do
   (a, (b, (c, _))) <- C.withPtr $ \a -> C.withPtr $ \b -> C.withPtr $ \c -> throwH (io a b c)
   return (a, b, c)
+
+
+
+peekArrayPtr :: (Storable a, Eq a) => a -> (Ptr a -> IO b) -> IO ([a], b)
+peekArrayPtr x io =
+  snd <$> C.withPtr ( \p -> do
+    e <- io p                         
+    n <- lengthArray0 x p
+    z <- peekArray n p
+    return (z, e)
+            )
