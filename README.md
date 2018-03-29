@@ -4,8 +4,16 @@
 
 Bindings to the HDF5 "lite" interface: https://support.hdfgroup.org/HDF5/doc/HL/RM_H5LT.html
 
+## Dependencies:
+
+- The HDF5 library headers are correctly installed at `/usr/local/hdf5/include`. In particular, the file `/usr/local/hdf5/include/hdf5_hl.h` must be present
+
+- The `stack` build tool
+
+- The `c2hs` tool (in case you don't have it, `stack install c2hs`)
+
 ## Installation
 
-1. Make sure the HDF5 library headers are correctly installed at `/usr/local/hdf5/include`. In particular, the file `/usr/local/hdf5/include/hdf5_hl.h` must be present.
-
-2. `stack install`
+- `make`
+  - generates the Haskell types by running `c2hs`. This is made necessary since HDF5 can be configured to work 
+  - runs `stack build`
