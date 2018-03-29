@@ -22,9 +22,10 @@ library
   exposed-modules:     Data.HDF5
                        Data.HDF5.Lite
                        Data.HDF5.Lite.Internal
-  other-modules:       Data.HDF5.Internal.Types
+                       Data.HDF5.Internal.Types
   -- c-sources:           src/Data/HDF5/Lite/Internal/Types.c
   build-depends:       base >= 4.7 && < 5
+                     , containers
                      , inline-c
                      , text
                      , template-haskell
