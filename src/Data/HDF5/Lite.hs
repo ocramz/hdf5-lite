@@ -2,7 +2,7 @@
 {-# language TypeFamilies #-}
 module Data.HDF5.Lite where
 
-import           Data.Functor ((<$>))
+import Data.Functor ((<$>))
 
 import Control.Monad.Catch (throwM, MonadThrow(..))
 import Control.Exception (Exception(..), bracket)
@@ -29,6 +29,7 @@ import Data.HDF5.Internal.Exceptions
 
 C.context H.hdf5ctx
 
+C.include "<hdf5.h>"
 C.include "<hdf5_hl.h>"
 
 
@@ -102,9 +103,14 @@ fclose :: Hid -> IO Herr
 fclose fid = [C.exp| herr_t{ H5Fclose( $(hid_t fid))}|]
 
 
--- | File memory bracket
+-- | File memory bracket, preexisting file
 withFile :: String -> FMode -> (Hid -> IO c) -> IO c
 withFile name mode = bracket (fopen name mode) fclose
+
+
+-- | File memory bracket
+withFileCreate :: String -> (Hid -> IO c) -> IO c
+withFileCreate name = bracket (fcreate name) fclose
 
 
 
@@ -169,8 +175,8 @@ makeDatasetInt' loc name rank dims bp =
         H5LTmake_dataset_int( $(hid_t loc), $(const char* name), $(int rank), $(const hsize_t* dims), $(int* bp) ) } |]
 
 makeDatasetInt
-  :: Hid -> String -> p -> [Hsize] -> VS.Vector CInt -> IO ()
-makeDatasetInt loc name rank dims bp =
+  :: Hid -> String -> [Hsize] -> VS.Vector CInt -> IO ()
+makeDatasetInt loc name dims bp =
   withMakeDataset loc name dims bp makeDatasetInt'
   
 
@@ -191,7 +197,43 @@ withMakeDataset loc name dims buffer io =
     VS.unsafeWith buffer $ \ bp_ -> throwH (io loc name_ rank dims_ bp_)
 
 
--- herr_t H5LTmake_dataset_char ( hid_t loc_id, const char *dset_name, int rank, const hsize_t *dims, const char *buffer ) 
+-- herr_t H5LTmake_dataset_char ( hid_t loc_id, const char *dset_name, int rank, const hsize_t *dims, const char *buffer )
+
+
+-- | Close a dataset and release its resources
+dclose :: Hid -> IO Herr
+dclose did = [C.exp| herr_t{ H5Dclose( $(hid_t did)) } |]
+
+
+
+
+
+
+
+-- herr_t H5LTget_dataset_info ( hid_t loc_id, const char *dset_name, hsize_t *dims, H5T_class_t *class_id, size_t *type_size )
+-- Purpose:
+--     Gets information about a dataset.  
+-- Description:
+--     H5LTget_dataset_info gets information about a dataset named dset_name exists attached to the object loc_id.
+-- Parameters:
+-- hid_t loc_id
+--     IN: Identifier of the object to locate the dataset within. 
+-- const char *dset_name
+--     IN: The dataset name. 
+-- hsize_t * dims
+--     OUT: The dimensions of the dataset.
+-- H5T_class_t * class_id
+--     OUT: The class identifier. To a list of the HDF5 class types please refer to the Datatype Interface API help.
+-- size_t * type_size
+--     OUT: The size of the datatype in bytes. 
+getDatasetInfo loc name = withCString name $ \name_ ->
+  C.withPtr $ \dims ->
+  C.withPtr $ \clid ->
+  C.withPtr $ \szt ->
+    [C.exp| herr_t{
+        H5LTget_dataset_info ( $(hid_t loc), $(const char *name_), $(hsize_t *dims), $(H5T_class_t *clid), $(size_t *szt) )
+                  }|]
+
 
 
 

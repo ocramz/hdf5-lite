@@ -33,5 +33,6 @@ hdf5TypesTable = M.fromList [
   , (C.TypeName "hid_t", [t| Hid |])
   , (C.TypeName "hsize_t", [t| Hsize |])
   , (C.TypeName "htri_t", [t| Htri |])
+  , (C.TypeName "H5T_class_t", [t| H5T_class_t |])
                             ]
 
