@@ -13,6 +13,8 @@ type Hid = {#type hid_t#}
 -- | HDF5 file object sizes (64 bits by default i.e. an unsigned CLLong)
 type Hsize = {#type hsize_t #} 
 
+-- | HDF5 "ternary" Boolean type. Functions that return `htri_t' return zero (false), positive (true), or negative (failure).
+type Htri = {#type htri_t #}
 
 
 
