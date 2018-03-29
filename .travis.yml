@@ -26,9 +26,9 @@ printf "\n=== Installing 'stack' :\n"
 # Download and install HDF5
 printf "\n=== Installing HDF5 :\n"
 - sudo ./setup-hdf5.sh
-# Install C2HS
-printf "\n=== Installing 'c2hs' :\n"
-stack install c2hs
+# # Install C2HS
+# printf "\n=== Installing 'c2hs' :\n"
+# stack install c2hs
 
 # This line does all of the work: installs GHC if necessary, build the library,
 # executables, and test suites, and runs the test suites. --no-terminal works
