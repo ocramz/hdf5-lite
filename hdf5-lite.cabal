@@ -22,10 +22,12 @@ library
   exposed-modules:     Data.HDF5
                        Data.HDF5.Lite
                        Data.HDF5.Lite.Internal
+                       Data.HDF5.Internal.Exceptions
                        Data.HDF5.Internal.Types
   -- c-sources:           src/Data/HDF5/Lite/Internal/Types.c
   build-depends:       base >= 4.7 && < 5
                      , containers
+                     , exceptions
                      , ghc-prim
                      , inline-c
                      , primitive
