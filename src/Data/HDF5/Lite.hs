@@ -52,7 +52,7 @@ fcreate name = withCString name $ \name_ ->
 
 
 
--- * HDF5 file operations
+-- * File operations (H5F)
 -- NB: each HDF5 physical file (e.g. "/usr/data/dataset0.h5" ) specifies a whole internal filesystem, the elements of which are what we call "files" here
 
 -- hid_t H5Fopen( const char *name, unsigned flags, hid_t fapl_id )
@@ -76,8 +76,10 @@ fopenRW :: String -> IO Hid
 fopenRW name = withCString name $ \name_ ->
   [C.exp| hid_t{ H5Fopen( $(const char* name_), H5F_ACC_RDWR, H5P_DEFAULT )}|]
 
+-- | File access mode
 data FMode = ReadOnly | ReadWrite deriving (Eq, Show)
 
+-- | Open a file
 fopen :: String -> FMode -> IO Hid
 fopen name mode =
   case mode of ReadOnly -> fopenReadOnly name
@@ -107,7 +109,13 @@ withFile name mode = bracket (fopen name mode) fclose
 
 
 
--- * Dataset creation
+-- * Dataspace (H5S)
+
+
+
+
+
+-- * Dataset (H5D)
 
 -- herr_t H5LTmake_dataset_double ( hid_t loc_id, const char *dset_name, int rank, const hsize_t *dims, const double *buffer )
 -- Purpose:
