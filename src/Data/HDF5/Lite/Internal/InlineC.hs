@@ -10,11 +10,14 @@ module Data.HDF5.Lite.Internal.InlineC (
   , screateSimple
   , sclose
   -- * Dataset
+  -- ** Create and fill
   , makeDatasetDouble'
   , makeDatasetFloat'
   , makeDatasetInt'
+  -- ** Read contents
   , readDatasetDouble'
   , readDatasetFloat'
+  -- ** Get information
   , getDatasetInfo
   , dclose
   -- * Helpers
