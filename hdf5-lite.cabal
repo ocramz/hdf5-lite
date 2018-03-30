@@ -48,6 +48,7 @@ test-suite spec
                      , hdf5-lite
                      , hspec
                      , QuickCheck
+                     , vector
 
 source-repository head
   type:     git

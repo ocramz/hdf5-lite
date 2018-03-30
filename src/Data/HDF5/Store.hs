@@ -3,6 +3,7 @@ module Data.HDF5.Store where
 import qualified Data.Vector.Storable as VS
 import Foreign.C.Types (CInt, CChar, CDouble, CFloat, CSize)
 import Foreign.Storable
+import Control.Exception
 
 import Data.HDF5.Internal.Types (Herr, Hid, Hsize, H5T_class_t)
 
@@ -29,6 +30,7 @@ data Dataset a = DS {
 class Storable a => StorableDS a where
   makeDS :: Hid -> String -> Dataset a -> IO ()
   readDS :: Hid -> String -> IO (Dataset a)
+
 
 
 
