@@ -1,6 +1,29 @@
 {-# language OverloadedStrings, QuasiQuotes, TemplateHaskell #-}
 {-# language TypeFamilies #-}
-module Data.HDF5.Lite.Internal.InlineC where
+module Data.HDF5.Lite.Internal.InlineC (
+  -- * File
+    fcreate
+  , fopen
+  , fclose
+  , FileOpenMode(..)
+  -- * Dataspace
+  , screateSimple
+  , sclose
+  -- * Dataset
+  , makeDatasetDouble'
+  , makeDatasetFloat'
+  , makeDatasetInt'
+  , readDatasetDouble'
+  , readDatasetFloat'
+  , getDatasetInfo
+  , dclose
+  -- * Helpers
+  , withPtr2
+  , withPtr3
+  , peekArrayPtr
+  , peekVS
+
+                                       ) where
 
 import Control.Monad.Catch (throwM, MonadThrow(..))
 import Control.Exception (Exception(..), bracket)
@@ -266,7 +289,7 @@ class Sized v where
 
 
 
-
+-- | Allocate two pointers, run an action using them and rethrow HDF5 errors as exceptions
 withPtr2
   :: (Storable a, Storable b) =>
      (Ptr a -> Ptr b -> IO Herr) -> IO (a, b)
@@ -274,6 +297,7 @@ withPtr2 io = do
   (a, (b, _)) <- C.withPtr $ \a -> C.withPtr $ \b -> throwH (io a b)
   return (a, b)
 
+-- | Allocate three pointers, run an action using them and rethrow HDF5 errors as exceptions
 withPtr3
   :: (Storable a, Storable b, Storable c) =>
      (Ptr a -> Ptr b -> Ptr c -> IO Herr) -> IO (a, b, c)
@@ -292,6 +316,7 @@ peekArrayPtr x io =
     return (z, e)
             )
 
+-- | O(N) Copy memory into a Storable array (via fromList)
 peekVS :: (Storable a, Eq a) =>
      a -> (Ptr a -> IO b) -> IO (VS.Vector a, b)
 peekVS x io = do
