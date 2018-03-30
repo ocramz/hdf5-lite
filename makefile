@@ -16,9 +16,12 @@ c2hs:
 
 
 step1:
-	stack ghc -- -optc -g ${SRCDIR}/Lite/Internal.hs -isrc/ -I${HDF5_INCLUDE}
-	stack ghc -- -optc -g ${SRCDIR}/Lite.hs -isrc/ -I${HDF5_INCLUDE}
+	# stack ghc -- -optc -g ${SRCDIR}/Lite/Internal.hs -isrc/ -I${HDF5_INCLUDE}
+	# stack ghc -- -optc -g ${SRCDIR}/Lite.hs -isrc/ -I${HDF5_INCLUDE}
+	stack ghc -- -optc -g ${SRCDIR}/Lite/Internal.hs ${SRCDIR}/Lite.hs -isrc/ -I${HDF5_INCLUDE}
 
+step2:
+	stack ghc -- src/Data/HDF5/Lite.o src/Data/HDF5/Lite/Internal.o -lhdf5 src/Data/HDF5/Lite.hs
 
 
 

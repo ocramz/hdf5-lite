@@ -16,11 +16,11 @@ tested-with:         GHC == 8.2.2
 
 library
   default-language:    Haskell2010
-  ghc-options:         -Wall
+  ghc-options:         -Wall -dynamic
   hs-source-dirs:      src
   include-dirs:        /usr/local/hdf5/include
   exposed-modules:     Data.HDF5.Lite
-  other-modules:       Data.HDF5.Lite.Internal
+                       Data.HDF5.Lite.Internal
                        Data.HDF5.Internal.Exceptions
                        Data.HDF5.Internal.Types
                        Data.HDF5.Store
@@ -35,12 +35,12 @@ library
                      , vector
                      -- , bytestring
   build-tools:       c2hs -any
-  extra-libraries:   hdf5
   extra-lib-dirs:    /usr/local/hdf5/lib
+  extra-libraries:   hdf5
 
 test-suite spec
   default-language:    Haskell2010
-  ghc-options:         -Wall
+  ghc-options:         -Wall -dynamic
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             LibSpec.hs
@@ -49,6 +49,9 @@ test-suite spec
                      , hspec
                      , QuickCheck
                      , vector
+  extra-lib-dirs:    /usr/local/hdf5/lib
+                     src/Data/HDF5/
+                     src/Data/HDF5/Lite/
 
 source-repository head
   type:     git
