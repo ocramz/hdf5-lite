@@ -295,7 +295,7 @@ dclose did = [C.exp| herr_t{ H5Dclose( $(hid_t did)) } |]
 
 readDatasetDouble' loc name_ bp =
   [C.exp|herr_t{
-      H5LTread( $(hid_t loc), $(const char* name_), $(double* bp) )
+      H5LTread_dataset_double( $(hid_t loc), $(const char* name_), $(double* bp) )
                }|]
 
 readDatasetDouble :: Hid -> String -> IO (VS.Vector CDouble)
@@ -305,7 +305,7 @@ readDatasetDouble loc name = withReadDataset loc name (undefined :: CDouble) rea
 
 readDatasetFloat' loc name_ bp =
   [C.exp|herr_t{
-      H5LTread( $(hid_t loc), $(const char* name_), $(float* bp) )
+      H5LTread_dataset_float( $(hid_t loc), $(const char* name_), $(float* bp) )
                }|]
 
 readDatasetFloat :: Hid -> String -> IO (VS.Vector CFloat)
