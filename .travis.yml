@@ -19,16 +19,16 @@ env:
 
 before_install:
 # Download and unpack the stack executable
-printf "\n=== Installing 'stack' :\n"
+- printf "\n=== Installing 'stack' :\n"
 - mkdir -p ~/.local/bin
 - export PATH=$HOME/.local/bin:$PATH
 - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar xz --wildcards --strip-components=1 -C ~/.local/bin '*/stack'
 # Download and install HDF5
-printf "\n=== Installing HDF5 :\n"
+- printf "\n=== Installing HDF5 :\n"
 - sudo ./setup-hdf5.sh
 # Install C2HS
-printf "\n=== Installing 'c2hs' :\n"
-stack install c2hs
+- printf "\n=== Installing 'c2hs' :\n"
+- stack install c2hs
 
 # This line does all of the work: installs GHC if necessary, build the library,
 # executables, and test suites, and runs the test suites. --no-terminal works
