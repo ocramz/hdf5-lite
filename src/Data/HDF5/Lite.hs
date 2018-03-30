@@ -1,6 +1,26 @@
 {-# language OverloadedStrings, QuasiQuotes, TemplateHaskell #-}
 {-# language TypeFamilies #-}
-module Data.HDF5.Lite where
+module Data.HDF5.Lite (
+  -- * File API
+  withFile
+  , withFileCreate
+  , FileOpenMode(..)  
+  -- -- * Dataspace API
+  -- , withDataspace
+  -- * Dataset API
+  -- ** Create
+  , makeDatasetFloat
+  , makeDatasetDouble
+  -- ** Read
+  , readDatasetFloat
+  , readDatasetDouble
+  -- ** Information
+  , getDatasetInfo
+  -- * HDF5 Types
+  , Hid, Hsize, Herr, H5T_class_t
+  -- * Exceptions
+  , HDF5Exception
+                      ) where
 
 import Data.Functor ((<$>))
 
@@ -11,6 +31,7 @@ import Foreign.C.String (CString, peekCString, withCString)
 import Foreign.C.Types (CInt, CChar, CDouble, CFloat, CSize)
 -- import Foreign.Marshal.Alloc (alloca)
 import Foreign.Marshal.Array (withArray, peekArray, lengthArray0)
+import Foreign.ForeignPtr (ForeignPtr(..), mallocForeignPtr)
 import Foreign.Ptr (Ptr)
 import Foreign.Storable
 
@@ -18,7 +39,7 @@ import GHC.Prim
 
 import qualified Data.Vector as V
 import qualified Data.Vector.Unboxed as VU
-import qualified Data.Vector.Storable as VS
+import qualified Data.Vector.Storable as VS (Vector(..), unsafeWith, unsafeFromForeignPtr0, unsafeToForeignPtr0, fromList)
 import qualified Data.Vector.Storable.Mutable as VM
 
 import           Data.HDF5.Internal.Types (Herr, Hid, Hsize, H5T_class_t)
@@ -78,10 +99,10 @@ fopenRW name = withCString name $ \name_ ->
   [C.exp| hid_t{ H5Fopen( $(const char* name_), H5F_ACC_RDWR, H5P_DEFAULT )}|]
 
 -- | File access mode
-data FMode = ReadOnly | ReadWrite deriving (Eq, Show)
+data FileOpenMode = ReadOnly | ReadWrite deriving (Eq, Show)
 
 -- | Open a file
-fopen :: String -> FMode -> IO Hid
+fopen :: String -> FileOpenMode -> IO Hid
 fopen name mode =
   case mode of ReadOnly -> fopenReadOnly name
                ReadWrite -> fopenRW name
@@ -104,7 +125,7 @@ fclose fid = [C.exp| herr_t{ H5Fclose( $(hid_t fid))}|]
 
 
 -- | File memory bracket, preexisting file
-withFile :: String -> FMode -> (Hid -> IO c) -> IO c
+withFile :: String -> FileOpenMode -> (Hid -> IO c) -> IO c
 withFile name mode = bracket (fopen name mode) fclose
 
 
@@ -116,9 +137,6 @@ withFileCreate name = bracket (fcreate name) fclose
 
 
 -- * Dataspace (H5S)
-
-
-
 
 
 -- hid_t H5Screate_simple( int rank, const hsize_t * current_dims, const hsize_t * maximum_dims )
@@ -195,8 +213,8 @@ makeDatasetFloat' loc name rank dims bp =
         H5LTmake_dataset_float( $(hid_t loc), $(const char* name), $(int rank), $(const hsize_t* dims), $(float* bp) ) } |]
 
 makeDatasetFloat
-  :: Hid -> String -> p -> [Hsize] -> VS.Vector CFloat -> IO ()
-makeDatasetFloat loc name rank dims buffer =
+  :: Hid -> String -> [Hsize] -> VS.Vector CFloat -> IO ()
+makeDatasetFloat loc name dims buffer =
   withMakeDataset loc name dims buffer makeDatasetFloat'
 
 -- int
@@ -239,7 +257,49 @@ dclose did = [C.exp| herr_t{ H5Dclose( $(hid_t did)) } |]
 
 
 
+-- herr_t H5LTread_dataset_double ( hid_t loc_id, const char *dset_name, double *buffer  
+-- Purpose:
+--     Reads a dataset from disk. 
+-- Description:
+--     H5LTread_dataset reads a dataset named dset_name attached to the object specified by the identifier loc_id. The HDF5 datatype is H5T_NATIVE_DOUBLE. 
+-- Parameters:
+-- hid_t loc_id
+--     IN: Identifier of the file or group to read the dataset within. 
+-- const char *dset_name
+--     IN: The name of the dataset to read. 
+-- double * buffer
+--     OUT: Buffer with data.
 
+
+readDatasetDouble' loc name_ bp =
+  [C.exp|herr_t{
+      H5LTread( $(hid_t loc), $(const char* name_), $(double* bp) )
+               }|]
+
+readDatasetDouble :: Hid -> String -> IO (VS.Vector CDouble)
+readDatasetDouble loc name = withReadDataset loc name (undefined :: CDouble) readDatasetDouble'  
+
+
+
+readDatasetFloat' loc name_ bp =
+  [C.exp|herr_t{
+      H5LTread( $(hid_t loc), $(const char* name_), $(float* bp) )
+               }|]
+
+readDatasetFloat :: Hid -> String -> IO (VS.Vector CFloat)
+readDatasetFloat loc name = withReadDataset loc name (undefined :: CFloat) readDatasetFloat'  
+
+
+withReadDataset
+  :: (Storable a, Eq a) =>
+     t
+     -> String
+     -> a
+     -> (t -> CString -> Ptr a -> IO Herr)
+     -> IO (VS.Vector a)
+withReadDataset loc name x io =
+  fst <$> withCString name ( \name_ ->
+  peekVS x $ \bp -> throwH (io loc name_ bp))
 
 
 
@@ -295,7 +355,7 @@ getDatasetInfo loc name = do
 
 
 
--- | Helpers
+-- * Helpers
 
 
 
@@ -307,6 +367,7 @@ class Sized v where
   rank :: v -> CInt
 
 -- data Sized v = Sized { szDat :: v, szDims :: [Hsize] } deriving (Eq, Show)
+
 
 
 
@@ -334,3 +395,10 @@ peekArrayPtr x io =
     z <- peekArray n p
     return (z, e)
             )
+
+peekVS :: (Storable a, Eq a) =>
+     a -> (Ptr a -> IO b) -> IO (VS.Vector a, b)
+peekVS x io = do
+  (arr, e) <- peekArrayPtr x io
+  return (VS.fromList arr, e)
+  

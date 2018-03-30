@@ -1,7 +1,7 @@
 name:                hdf5-lite
 version:             0.1.0.0
 synopsis:            Bindings to the HDF5 "lite" interface
--- description:
+description:         This library wraps the simplified ("lite") interface to the HDF5 data format.
 homepage:            https://github.com/ocramz/hdf5-lite
 license:             BSD3
 license-file:        LICENSE
@@ -19,13 +19,11 @@ library
   ghc-options:         -Wall
   hs-source-dirs:      src
   include-dirs:        /usr/local/hdf5/include
-  exposed-modules:     Data.HDF5
-                       Data.HDF5.Lite
-                       Data.HDF5.Lite.Internal
+  exposed-modules:     Data.HDF5.Lite
+  other-modules:       Data.HDF5.Lite.Internal
                        Data.HDF5.Internal.Exceptions
                        Data.HDF5.Internal.Types
-  other-modules:       Data.HDF5.Store
-  -- c-sources:           src/Data/HDF5/Lite/Internal/Types.c
+                       Data.HDF5.Store
   build-depends:       base >= 4.7 && < 5
                      , containers
                      , exceptions
