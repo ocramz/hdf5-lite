@@ -13,7 +13,7 @@ c2hs:
 
 
 clean:
-	rm ${SRCDIR}/*.o ${SRCDIR}/*.hi ${SRCDIR}/*.dyn* ${SRCDIR_I}/*.o ${SRCDIR_I}/*.hi ${SRCDIR_I}/*.dyn* ${SRCDIR_L}/*.o ${SRCDIR_L}/*.hi ${SRCDIR_L}/*.dyn*
+	rm ${SRCDIR}/*.o ${SRCDIR}/*.hi ${SRCDIR}/*.dyn* ${SRCDIR_I}/*.h ${SRCDIR_I}/*.o ${SRCDIR_I}/*.hi ${SRCDIR_I}/*.dyn* ${SRCDIR_L}/*.o ${SRCDIR_L}/*.hi ${SRCDIR_L}/*.dyn*
 
 
 ####

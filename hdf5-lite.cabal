@@ -21,6 +21,8 @@ library
   include-dirs:        /usr/local/hdf5/include
   exposed-modules:     Data.HDF5.Lite
                        Data.HDF5.Lite.Internal
+                       Data.HDF5.Lite.Internal.InlineC                       
+                       Data.HDF5.Lite.Internal.InlineC.Context                       
                        Data.HDF5.Internal.Exceptions
                        Data.HDF5.Internal.Types
                        Data.HDF5.Store
