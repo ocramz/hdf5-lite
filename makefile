@@ -16,8 +16,6 @@ c2hs:
 
 
 step1:
-	# stack ghc -- -optc -g ${SRCDIR}/Lite/Internal.hs -isrc/ -I${HDF5_INCLUDE}
-	# stack ghc -- -optc -g ${SRCDIR}/Lite.hs -isrc/ -I${HDF5_INCLUDE}
 	stack ghc -- -optc -g ${SRCDIR}/Lite/Internal.hs ${SRCDIR}/Lite.hs -isrc/ -I${HDF5_INCLUDE}
 
 step2:
@@ -28,9 +26,3 @@ step2:
 
 
 
-
-
-# DEADCODESTRIP := -fdata-sections -ffunction-sections -Wl,--gc-sections 
-
-# step2:
-# 	gcc -c -g -w $(DEADCODESTRIP) 
