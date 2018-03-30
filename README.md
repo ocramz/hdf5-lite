@@ -4,6 +4,12 @@
 
 Bindings to the HDF5 "lite" interface: https://support.hdfgroup.org/HDF5/doc/HL/RM_H5LT.html
 
+## Warning
+
+Experimental, partly tested and incomplete, not meant for production use.
+
+
+
 ## Dependencies
 
 - The HDF5 library headers must be correctly installed at `/usr/local/hdf5/include`. In particular, the file `/usr/local/hdf5/include/hdf5_hl.h` must be present
@@ -17,3 +23,10 @@ Bindings to the HDF5 "lite" interface: https://support.hdfgroup.org/HDF5/doc/HL/
 - `make`
   - generates the Haskell types by running `c2hs`. This is necessary since HDF5 may be configured to use specific numerical precisions etc.
   - runs `stack build`
+
+
+
+
+## Credits
+
+Inspiration : [`hnetcdf`](https://hackage.haskell.org/package/hnetcdf) 

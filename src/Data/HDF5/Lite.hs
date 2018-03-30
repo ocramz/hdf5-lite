@@ -1,5 +1,17 @@
 {-# language OverloadedStrings, QuasiQuotes, TemplateHaskell #-}
 {-# language TypeFamilies #-}
+{- |
+Module      : Data.HDF5.Lite
+Copyright   : (c) Marco Zocca, 2018
+License     : GPL-3
+Maintainer  : zocca.marco gmail
+Stability   : experimental
+Portability : POSIX
+= Introduction
+
+This module exposes the main interface to @hdf5-lite@.
+
+-}
 module Data.HDF5.Lite (
   -- * File API
   withFile
@@ -8,12 +20,13 @@ module Data.HDF5.Lite (
   -- -- * Dataspace API
   -- , withDataspace
   -- * Dataset API
-  -- ** Create
-  , makeDatasetFloat
-  , makeDatasetDouble
-  -- ** Read
-  , readDatasetFloat
-  , readDatasetDouble
+  , StorableDataset(..)
+  -- -- ** Create
+  -- , makeDatasetFloat
+  -- , makeDatasetDouble
+  -- -- ** Read
+  -- , readDatasetFloat
+  -- , readDatasetDouble
   -- ** Information
   , getDatasetInfo
   -- * HDF5 Types
@@ -37,16 +50,17 @@ import Foreign.Storable
 
 import GHC.Prim
 
+import qualified Language.C.Inline as C
+
 import qualified Data.Vector as V
 import qualified Data.Vector.Unboxed as VU
 import qualified Data.Vector.Storable as VS (Vector(..), unsafeWith, unsafeFromForeignPtr0, unsafeToForeignPtr0, fromList)
 import qualified Data.Vector.Storable.Mutable as VM
 
-import           Data.HDF5.Internal.Types (Herr, Hid, Hsize, H5T_class_t)
+import Data.HDF5.Internal.Types (Herr, Hid, Hsize, H5T_class_t)
 import qualified Data.HDF5.Lite.Internal as H
-import qualified Language.C.Inline as C
-
 import Data.HDF5.Internal.Exceptions
+import Data.HDF5.Store
 
 C.context H.hdf5ctx
 
@@ -247,6 +261,14 @@ withMakeDataset loc name dims buffer io =
     withArray dims $ \dims_ -> 
     VS.unsafeWith buffer $ \ bp_ -> throwH (io loc name_ rank dims_ bp_)
 
+instance StorableDataset CFloat where
+  makeDataset = makeDatasetFloat
+  readDataset = readDatasetFloat
+
+instance StorableDataset CDouble where
+  makeDataset = makeDatasetDouble
+  readDataset = readDatasetDouble
+
 
 -- herr_t H5LTmake_dataset_char ( hid_t loc_id, const char *dset_name, int rank, const hsize_t *dims, const char *buffer )
 
@@ -300,6 +322,31 @@ withReadDataset
 withReadDataset loc name x io =
   fst <$> withCString name ( \name_ ->
   peekVS x $ \bp -> throwH (io loc name_ bp))
+
+
+
+
+
+
+
+-- herr_t H5LTget_attribute_ndims( hid_t loc_id, const char *obj_name, const char *attr_name,  int *rank )
+-- Purpose:
+--     Gets the dimensionality of an attribute. 
+-- Description:
+--     H5LTget_attribute_ndims gets the dimensionality of an attribute named attr_name that is attached to the object specified by the name obj_name. 
+-- Parameters:
+-- hid_t loc_id
+--     IN: Identifier of the object ( dataset or group) to read the attribute from. 
+-- const char *obj_name
+--     IN: The name of the object that the attribute is attached to. 
+-- const char *attr_name
+--     IN: The attribute name. 
+-- int * rank
+--     OUT: The dimensionality of the attribute. 
+
+
+
+
 
 
 

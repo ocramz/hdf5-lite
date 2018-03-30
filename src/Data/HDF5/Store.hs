@@ -1,5 +1,23 @@
 module Data.HDF5.Store where
 
+import qualified Data.Vector.Storable as VS
+import Foreign.C.Types (CInt, CChar, CDouble, CFloat, CSize)
+import Foreign.Storable
+
+import Data.HDF5.Internal.Types (Herr, Hid, Hsize, H5T_class_t)
+
+class Storable a => StorableDataset a where
+  -- | Allocate and write a dataset
+  makeDataset :: Hid  -- ^ Identifier
+    -> String    -- ^ Dataset name
+    -> [Hsize]   -- ^ Dimensions
+    -> VS.Vector a -- ^ Dataset contents
+    -> IO ()
+  -- | Read a dataset
+  readDataset :: Hid -- ^ Identifier
+    -> String        -- ^ Dataset name
+    -> IO (VS.Vector a)
+
 
 
 
