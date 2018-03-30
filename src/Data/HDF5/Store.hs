@@ -21,6 +21,17 @@ class Storable a => StorableDataset a where
 
 
 
+data Dataset a = DS {
+    dsSize :: [Hsize]
+  , dsData :: VS.Vector a
+                    } deriving (Eq, Show)
+
+class Storable a => StorableDS a where
+  makeDS :: Hid -> String -> Dataset a -> IO ()
+  readDS :: Hid -> String -> IO (Dataset a)
+
+
+
 
 
 -- from https://github.com/ian-ross/hnetcdf/blob/master/Data/NetCDF/Store.hs
