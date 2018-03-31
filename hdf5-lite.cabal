@@ -16,13 +16,13 @@ tested-with:         GHC == 8.2.2
 
 library
   default-language:    Haskell2010
-  ghc-options:         -Wall -dynamic
+  ghc-options:         -Wall
   hs-source-dirs:      src
   include-dirs:        /usr/local/hdf5/include
   exposed-modules:     Data.HDF5.Lite
                        Data.HDF5.Lite.Internal
                        Data.HDF5.Lite.Internal.InlineC                       
-                       Data.HDF5.Lite.Internal.InlineC.Context                       
+                       Data.HDF5.Lite.Internal.InlineC.Context                     
                        Data.HDF5.Internal.Exceptions
                        Data.HDF5.Internal.Types
                        Data.HDF5.Store

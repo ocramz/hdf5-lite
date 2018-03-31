@@ -180,13 +180,11 @@ sclose hid = [C.exp| herr_t{ H5Sclose( $(hid_t hid)) }|]
 --     Returns a non-negative value if successful; otherwise returns a negative value.
 makeDatasetDouble' :: Hid -> Ptr CChar -> CInt -> Ptr Hsize -> Ptr C.CDouble -> IO Herr
 makeDatasetDouble' loc name rank dims bp =
-  [C.exp| herr_t{
-        H5LTmake_dataset_double( $(hid_t loc), $(const char* name), $(int rank), $(const hsize_t* dims), $(double* bp) ) } |]  
+  [C.exp| herr_t{H5LTmake_dataset_double( $(hid_t loc), $(const char* name), $(int rank), $(const hsize_t* dims), $(double* bp) ) } |]  
 
 makeDatasetFloat' :: Hid -> Ptr CChar -> CInt -> Ptr Hsize -> Ptr CFloat -> IO Herr
 makeDatasetFloat' loc name rank dims bp =
-  [C.exp| herr_t{
-        H5LTmake_dataset_float( $(hid_t loc), $(const char* name), $(int rank), $(const hsize_t* dims), $(float* bp) ) } |]
+  [C.exp| herr_t{ H5LTmake_dataset_float( $(hid_t loc), $(const char* name), $(int rank), $(const hsize_t* dims), $(float* bp) ) } |]
 
 makeDatasetInt'
   :: Hid -> Ptr CChar -> CInt -> Ptr Hsize -> Ptr CInt -> IO Herr
